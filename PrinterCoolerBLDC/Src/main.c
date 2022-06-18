@@ -168,7 +168,9 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  MCI_State_t MState = MC_GetSTMStateMotor1();
+	  if (MState == FAULT_OVER)
+		  MC_AcknowledgeFaultMotor1();
     /* USER CODE BEGIN 3 */
 	  if(uwDutyCycleLast != uwDutyCycle)
 	 	  {
@@ -186,7 +188,7 @@ int main(void)
 	 					  bool StartUpStatus = MC_StartMotor1();
 	 					  if (StartUpStatus)
 	 					  {
-	 						 AutoRestartAsked = false;   /* Disable auto restart */
+	 						//
 	 					  }
 
 	 		            }
