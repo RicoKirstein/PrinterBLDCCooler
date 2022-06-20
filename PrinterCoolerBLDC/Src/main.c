@@ -59,9 +59,9 @@ DMA_HandleTypeDef hdma_usart2_tx;
 /* USER CODE BEGIN PV */
 /* USER CODE BEGIN PV */
 #define M_MAX_DUTY  			10000
-#define M_MAX_SPEED_RPM         32000                     /* Minimum reachable speed by using GimBal motor for this demonstration  */
-#define M_MIN_SPEED_RPM         1800                     /* Minimum reachable speed by using GimBal motor for this demonstration  */
-#define M_THRESHOLD     		M_MAX_DUTY*M_MIN_SPEED_RPM/M_MAX_SPEED_RPM                    /* Threshold to ensure a minimum potentiometer position to restart motor  */
+#define M_MAX_SPEED_RPM         31000                     /* Minimum reachable speed by using GimBal motor for this demonstration  */
+#define M_MIN_SPEED_RPM         1600                     /* Minimum reachable speed by using GimBal motor for this demonstration  */
+#define M_THRESHOLD     		20                   /* Threshold to ensure a minimum potentiometer position to restart motor  */
 
 #define SPEED_RAMP_DURATION     200
 
@@ -72,6 +72,7 @@ __IO uint32_t            uwIC2Value = 0;
 __IO uint32_t            uwDutyCycle = 0;
 /* Frequency Value */
 __IO uint32_t            uwFrequency = 0;
+__IO uint32_t 			 motorTargetSpeed =0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -184,7 +185,8 @@ int main(void)
 	 		            if (uwDutyCycle > M_THRESHOLD)
 	 		            {
 	 		              MC_AcknowledgeFaultMotor1();
-	 					  MC_ProgramSpeedRampMotor1( (uwDutyCycle*M_MAX_SPEED_RPM/M_MAX_DUTY * SPEED_UNIT / 60), SPEED_RAMP_DURATION );
+	 		              motorTargetSpeed=((uwDutyCycle*(M_MAX_SPEED_RPM-M_MIN_SPEED_RPM)/(M_MAX_DUTY-M_THRESHOLD)+M_MIN_SPEED_RPM) * SPEED_UNIT / 60);
+	 					  MC_ProgramSpeedRampMotor1(motorTargetSpeed, SPEED_RAMP_DURATION );
 	 					  bool StartUpStatus = MC_StartMotor1();
 	 					  if (StartUpStatus)
 	 					  {
@@ -209,7 +211,9 @@ int main(void)
 	 				}
 	 				else
 	 				{
-	 				   MC_ProgramSpeedRampMotor1( (uwDutyCycle*M_MAX_SPEED_RPM/M_MAX_DUTY * SPEED_UNIT / 60), SPEED_RAMP_DURATION );
+	 		             motorTargetSpeed=((uwDutyCycle*(M_MAX_SPEED_RPM-M_MIN_SPEED_RPM)/(M_MAX_DUTY-M_THRESHOLD)+M_MIN_SPEED_RPM) * SPEED_UNIT / 60);
+	 		            MC_ProgramSpeedRampMotor1(motorTargetSpeed, SPEED_RAMP_DURATION );
+
 	 				}
 
 	 		      }
@@ -982,8 +986,15 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	  {
-	      uwDutyCycle = 0;
-	      uwFrequency = 0;
+		  if(!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15))
+		  {
+			  uwDutyCycle=10000;
+		  }
+		  else
+		  {
+			  uwDutyCycle = 0;
+		  }
+	      	  uwFrequency = 0;
 	  }
 }
 /* USER CODE END 4 */

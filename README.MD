@@ -1,6 +1,7 @@
 BLDC driver using B-G431B-ESC1 eval board
 and WM7040-24V CPAP blower
-currently only PWM input works from 0-99% power level on the pwm pin
+currently only PWM input works from 0-100% power level on the pwm pin
+with 1% being ~1600-1800rpm, which is the minimum the blower runs stable.
 
 I strongly advise adding a large capacitor to the ESC board.
 Right now only way to get rpm feedback is using the ST MotorPilot tool over the usb serial.
